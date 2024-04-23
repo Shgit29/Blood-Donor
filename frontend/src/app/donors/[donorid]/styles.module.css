@@ -1,0 +1,9 @@
+.details {
+margin-top: 100px;
+  display: flex; /* Enable flexbox for the container */
+  flex-direction: column; /* Arrange elements vertically */
+  align-items: center; /* Center elements horizontally within the container */
+  justify-content: center; /* Center elements vertically within the container */
+  /* Optional: Set height to 100vh to cover the entire viewport */
+  height: 100vh;
+}

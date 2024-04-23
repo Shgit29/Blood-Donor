@@ -1,0 +1,44 @@
+"use client";
+
+import React, { useState, useEffect } from "react";
+import IntroDivider from "./IntroDivider";
+import styles from "./styles.module.css";
+
+// Define ShowDonors component
+const ShowDonors = () => {
+  // State to store donors data
+  const [donors, setDonors] = useState([]);
+
+  // Fetch donors data from the server
+  useEffect(() => {
+    async function fetchDonors() {
+      try {
+        const response = await fetch("http://localhost:3000/donors");
+        if (!response.ok) {
+          throw new Error("Failed to fetch donor data");
+        }
+        const donorData = await response.json();
+        setDonors(donorData);
+      } catch (error) {
+        console.error("Error fetching donor data:", error);
+      }
+    }
+
+    fetchDonors();
+  }, []);
+
+  // Render component
+  return (
+    <div>
+      <div className={styles.show}>
+        {donors.map((donor) => (
+          <div key={donor.donorid} className={styles.intro}>
+            <IntroDivider donor={donor} />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+export default ShowDonors;

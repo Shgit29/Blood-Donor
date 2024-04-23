@@ -1,0 +1,12 @@
+.intro {
+margin-top: 20px;
+  margin-bottom: 10px;
+}
+
+.show {
+ display: flex; /* Enable flexbox for the container */
+  flex-direction: column; /* Arrange elements vertically */
+  align-items: center; /* Center elements horizontally */
+  justify-content: center; /* Center elements vertically */
+  margin-top: 500px;
+}
