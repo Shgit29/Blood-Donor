@@ -1,12 +1,12 @@
 "use client";
-
-
-import React, { useState, useEffect } from "react";
-import { useParams } from "next/navigation";
-import SimpleContainer from "./details"; // Assuming this component renders donor details
+import React from "react";
+import BecomeDonor from "./inputs";
 import styles from "./styles.module.css";
+import Box from "@mui/material/Box";
+import { useParams } from "next/navigation";
+import { useState, useEffect } from "react";
 
-export default function DonorDetailsPage() {
+function page() {
   const [donor, setDonor] = useState(null);
   const params = useParams();
 
@@ -33,15 +33,20 @@ export default function DonorDetailsPage() {
     fetchDonor();
   }, [params]);
   return (
-    <div className={styles.details}>
-      {donor ? (
-        <>
-          <SimpleContainer donor={donor} />{" "}
-          {/* Pass donor to SimpleContainer */}
-        </>
-      ) : (
-        <div>Loading...</div>
-      )}
+    <div className={styles.formPage}>
+      <Box component="section" sx={{ p: 2, border: "1px  grey" }}>
+        <div>
+          {donor ? (
+            <>
+              <BecomeDonor donor={donor} />
+            </>
+          ) : (
+            <div>Loading...</div>
+          )}
+        </div>
+      </Box>
     </div>
   );
 }
+
+export default page;

@@ -22,7 +22,7 @@ export default function RootLayout({
         <body className={inter.className}>
           {children}
           <header>
-            {/* <ResponsiveAppBar /> */}
+            <ResponsiveAppBar />
           </header>
         </body>
       </AppRouterCacheProvider>

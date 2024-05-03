@@ -46,7 +46,7 @@ export default function IntroDivider({ donor }: IntroDividerProps) {
         </Stack>
         <Typography color="text.secondary" variant="body2">
           Pinstriped cornflower blue cotton blouse takes you on a walk to the
-          park or just down the hall.
+          park or just down the hall. 
         </Typography>
       </Box>
       <Divider />

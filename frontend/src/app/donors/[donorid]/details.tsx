@@ -26,7 +26,7 @@ export default function SimpleContainer({ donor }: DonorProps) {
   return (
     <div>
       <CssBaseline />
-      <Container maxWidth="lg">
+      <Container maxWidth="xl">
         <RecipeReviewCard donor={donor} />
         
         {donor.donorname}
