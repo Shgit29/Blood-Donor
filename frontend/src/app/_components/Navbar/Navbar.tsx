@@ -137,7 +137,7 @@ function ResponsiveAppBar() {
 
           <Box sx={{ flexGrow: 0 }}>
             <Tooltip>
-              <IconButton>Login</IconButton>
+              <IconButton href="/users/Login">Login</IconButton>
             </Tooltip>
             <Menu
               sx={{ mt: "45px" }}
@@ -165,7 +165,7 @@ function ResponsiveAppBar() {
 
           <Box sx={{ flexGrow: 0 }}>
             <Tooltip>
-              <IconButton>Register</IconButton>
+              <IconButton href="/users/Register">Register</IconButton>
             </Tooltip>
             <Menu
               sx={{ mt: "45px" }}

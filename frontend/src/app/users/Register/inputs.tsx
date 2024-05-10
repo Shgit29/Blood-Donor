@@ -2,11 +2,11 @@
 import { useForm, SubmitHandler } from "react-hook-form";
 import axios from "axios";
 import React, { useState } from "react";
-import { useRouter } from "next/navigation";
 
 import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
 import styles from "./styles.module.css";
+import { useRouter } from "next/navigation";
 
 type Inputs = {
   username?: string; // Optional username field
@@ -26,7 +26,7 @@ export default function LoginForm() {
   const handleLogin = async (formData: Inputs): Promise<void> => {
     try {
       const response = await axios.post(
-        "http://localhost:3000/users/login", // Replace with your login API endpoint
+        "http://localhost:3000/users/register", // Replace with your login API endpoint
         formData,
         {
           headers: {
@@ -37,9 +37,9 @@ export default function LoginForm() {
 
       if (response.status === 200 || response.status === 201) {
         console.log("Login successful:", response.data);
+        router.push("/donors");
         // Handle successful login (e.g., redirect to protected area, show success message)
         setIsSubmitted(true);
-        router.push("/donors");
       } else {
         console.error("Login failed:", response);
         // Handle login errors (e.g., display error message to user)
@@ -61,13 +61,13 @@ export default function LoginForm() {
           "Username can only contain letters, numbers, underscores, hyphens, and periods",
       },
     },
-    // email: {
-    //   required: "Email is required",
-    //   pattern: {
-    //     value: /^\S+@\S+\.\S+$/, // Basic email format validation
-    //     message: "Please enter a valid email address",
-    //   },
-    // },
+    email: {
+      required: "Email is required",
+      pattern: {
+        value: /^\S+@\S+\.\S+$/, // Basic email format validation
+        message: "Please enter a valid email address",
+      },
+    },
     password: {
       required: "Password is required",
       minLength: 6, // Minimum password length requirement (optional)
@@ -88,7 +88,7 @@ export default function LoginForm() {
           />
         </div>
 
-        {/* <div className={styles.formDiv}>
+        <div className={styles.formDiv}>
           <TextField
             label="Email"
             {...register("email", registerOptions.email)}
@@ -96,7 +96,7 @@ export default function LoginForm() {
             helperText={errors.email?.message} // Set helper text for error message
             fullWidth
           />
-        </div> */}
+        </div>
 
         <div className={styles.formDiv}>
           <TextField

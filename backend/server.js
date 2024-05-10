@@ -3,14 +3,42 @@ const db = require("./db");
 const cors = require("cors");
 const axios = require("axios");
 const bodyParser = require("body-parser");
+const bcrypt = require("bcrypt");
+// const requireLogin = require("./middleware");
 
+const session = require("express-session");
 const app = express();
 app.use(cors());
 app.use(bodyParser.json());
 
+// const sessionConfig = {
+//   secret: "bettersecret",
+//   resave: false,
+//   saveUninitialized: true,
+//   cookie: {
+//     secure: true,
+//   },
+// };
+app.use(express.urlencoded({ extended: true }));
+app.use(
+  session({
+    secret: "your-secret-key", // Replace with a secure random string
+    resave: false,
+    saveUninitialized: false,
+  })
+);
+
 //show all donors
 
-app.get("/donors", async (req, res) => {
+const requireLogin = (req, res, next) => {
+  if (!req.session.user_id) {
+    return res.status(401).send("Unauthorized");
+    // console.log(req.session);
+  }
+  next();
+};
+
+app.get("/donors", requireLogin, async (req, res) => {
   try {
     const result = await db.query("SELECT * FROM blood_donors");
     return res.json(result.rows);
@@ -22,7 +50,7 @@ app.get("/donors", async (req, res) => {
 
 //creating a new donor
 
-app.post("/become-a-donor", async (req, res) => {
+app.post("/become-a-donor", requireLogin, async (req, res) => {
   try {
     const donorData = req.body;
     const insertQuery = `INSERT INTO blood_donors (donorname, dateofbirth, bloodgroup, location, disease, contact) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *`;
@@ -126,7 +154,78 @@ app.delete("/donors/:donorid", async (req, res) => {
   }
 });
 
+//user routes
 
+app.post("/users/register", async (req, res) => {
+  const { password, username, email } = req.body;
+
+  try {
+    const hash = await bcrypt.hash(password, 12);
+
+    const query = {
+      text: "INSERT INTO users (username, email, password) VALUES ($1, $2, $3) RETURNING userid",
+      values: [username, email, hash],
+    };
+
+    const result = await db.query(query);
+    const userId = result.rows[0].userid;
+
+    req.session.user_id = userId;
+    console.log(req.session);
+
+    res.status(200).send("User registered successfully");
+  } catch (error) {
+    console.error("Error registering user:", error);
+    res.status(500).send("Error registering user");
+  }
+});
+
+app.post("/users/login", async (req, res) => {
+  const { username, password } = req.body;
+
+  try {
+    // Retrieve the user from the database based on the provided username
+    const query = {
+      text: "SELECT * FROM users WHERE username = $1",
+      values: [username],
+    };
+
+    const result = await db.query(query);
+
+    if (result.rows.length === 0) {
+      return res.status(401).send("User not found");
+    }
+
+    const user = result.rows[0];
+
+    // Compare the hashed password stored in the database with the password provided by the user
+    const passwordMatch = await bcrypt.compare(password, user.password);
+
+    if (!passwordMatch) {
+      return res.status(401).send("Incorrect password");
+    }
+
+    // Store user's unique identifier in the session
+    req.session.user_id = user.userid;
+    console.log(req.session);
+
+    // Authentication successful
+    res.status(200).send("Login successful");
+  } catch (error) {
+    console.error("Error during login:", error);
+    res.status(500).send("Error during login");
+  }
+});
+// Logout route
+app.post("/users/logout", (req, res) => {
+  req.session.destroy((err) => {
+    if (err) {
+      console.error("Error destroying session:", err);
+      return res.status(500).send("Error logging out");
+    }
+    res.status(200).send("Logout successful");
+  });
+});
 app.listen(3000, () => {
   console.log("Server is running on port 3000");
 });

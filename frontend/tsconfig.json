@@ -21,6 +21,6 @@
       "@/*": ["./src/*"]
     }
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "src/app/donors/page.jsx", "src/app/BecomeADonor/page.jsx", "src/app/donors/[donorid]/page.jsx", "src/app/donors/[donorid]/edit/inputs.tsx", "src/app/users/Login/inputs.tsx"],
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "src/app/donors/page.jsx", "src/app/BecomeADonor/page.jsx", "src/app/donors/[donorid]/page.jsx", "src/app/donors/[donorid]/edit/inputs.tsx", "src/app/users/Register/inputs.tsx"],
   "exclude": ["node_modules"]
 }
