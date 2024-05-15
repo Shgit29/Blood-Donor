@@ -45,7 +45,7 @@ export default function LoginForm() {
         // Handle login errors (e.g., display error message to user)
       }
     } catch (error) {
-      console.error("Error logging in:", error);
+      console.error("Error Registering in:", error);
       // Handle errors (e.g., network issues, server errors)
     }
   };

@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import IntroDivider from "./IntroDivider";
 import styles from "./styles.module.css";
+import MapboxMap from "./MapboxMap";
 
 // Define ShowDonors component
 const ShowDonors = () => {
@@ -27,9 +28,20 @@ const ShowDonors = () => {
     fetchDonors();
   }, []);
 
+  // Create a single GeoJSON object from donor geometries
+  const donorGeojson = {
+    features: donors.map((donor) => ({
+      geometry: donor.geometry,
+    })),
+  };
+
   // Render component
   return (
     <div>
+      <div>
+        <MapboxMap geojson={donorGeojson} />
+      </div>
+
       <div className={styles.show}>
         {donors.map((donor) => (
           <div key={donor.donorid} className={styles.intro}>

@@ -4,12 +4,18 @@ const cors = require("cors");
 const axios = require("axios");
 const bodyParser = require("body-parser");
 const bcrypt = require("bcrypt");
+require("dotenv").config();
+
 // const requireLogin = require("./middleware");
+const mbxGeocoding = require("@mapbox/mapbox-sdk/services/geocoding");
+const mapBoxToken = process.env.MAPBOX_TOKEN;
+const geocoder = mbxGeocoding({ accessToken: mapBoxToken });
 
 const session = require("express-session");
 const app = express();
-app.use(cors());
+
 app.use(bodyParser.json());
+app.use(cors());
 
 // const sessionConfig = {
 //   secret: "bettersecret",
@@ -22,25 +28,35 @@ app.use(bodyParser.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(
   session({
+    key: "user_id",
     secret: "your-secret-key", // Replace with a secure random string
     resave: false,
-    saveUninitialized: false,
+    saveUninitialized: true,
+    cookie: {
+      expires: Date.now() + 1000 * 60 * 60 * 24 * 7,
+      maxAge: 1000 * 60 * 60 * 24 * 7,
+    },
   })
 );
 
 //show all donors
 
 const requireLogin = (req, res, next) => {
-  if (!req.session.user_id) {
-    return res.status(401).send("Unauthorized");
-    // console.log(req.session);
+  // console.log(session.Store);
+  if (req.session.user_id) {
+    // If user is authenticated, proceed to the next middleware or route handler
+    next();
+  } else {
+    // If user is not authenticated, send a 401 Unauthorized response
+    console.error("User not authenticated. Session:", req.session);
+    return res.status(401).json({ message: "Unauthorized" });
   }
-  next();
 };
 
-app.get("/donors", requireLogin, async (req, res) => {
+app.get("/donors", async (req, res) => {
   try {
     const result = await db.query("SELECT * FROM blood_donors");
+    console.log(result.rows);
     return res.json(result.rows);
   } catch (err) {
     console.error(err);
@@ -50,10 +66,21 @@ app.get("/donors", requireLogin, async (req, res) => {
 
 //creating a new donor
 
-app.post("/become-a-donor", requireLogin, async (req, res) => {
+app.post("/become-a-donor", async (req, res) => {
   try {
+    const geoData = await geocoder
+      .forwardGeocode({
+        query: req.body.location,
+        limit: 1,
+      })
+      .send();
+
+    // console.log(req.body.location);
+
+    // console.log(geoData.body.features[0].geometry);
     const donorData = req.body;
-    const insertQuery = `INSERT INTO blood_donors (donorname, dateofbirth, bloodgroup, location, disease, contact) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *`;
+    console.log(donorData.geoData);
+    const insertQuery = `INSERT INTO blood_donors (donorname, dateofbirth, bloodgroup, location, disease, contact, geometry) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *`;
     const result = await db.query(insertQuery, [
       donorData.fullName,
       donorData.DOB,
@@ -61,6 +88,7 @@ app.post("/become-a-donor", requireLogin, async (req, res) => {
       donorData.location,
       donorData.disease || null, // Handle optional disease field
       donorData.contactNumber,
+      geoData.body.features[0].geometry,
     ]);
     // console.log("Received donor data:", donorData);
     res.status(201).json({ message: "Donor registration successful" });
@@ -88,6 +116,12 @@ app.get("/donors/:donorid", async (req, res) => {
 
 app.put("/donors/:donorid", async (req, res) => {
   try {
+    const geoData = await geocoder
+      .forwardGeocode({
+        query: req.body.location,
+        limit: 1,
+      })
+      .send();
     const donorId = req.params.donorid;
     const updatedData = req.body;
 
@@ -99,9 +133,10 @@ app.put("/donors/:donorid", async (req, res) => {
         bloodgroup = $3, 
         location = $4, 
         disease = $5, 
-        contact = $6 
+        contact = $6,
+        geometry = $7
       WHERE 
-        donorid = $7
+        donorid = $8
       RETURNING *`;
 
     const result = await db.query(updateQuery, [
@@ -111,6 +146,7 @@ app.put("/donors/:donorid", async (req, res) => {
       updatedData.location,
       updatedData.disease || null,
       updatedData.contactNumber,
+      geoData.body.features[0].geometry,
       donorId,
     ]);
 
@@ -184,7 +220,6 @@ app.post("/users/login", async (req, res) => {
   const { username, password } = req.body;
 
   try {
-    // Retrieve the user from the database based on the provided username
     const query = {
       text: "SELECT * FROM users WHERE username = $1",
       values: [username],
@@ -193,29 +228,30 @@ app.post("/users/login", async (req, res) => {
     const result = await db.query(query);
 
     if (result.rows.length === 0) {
+      console.error("User not found:", username);
       return res.status(401).send("User not found");
     }
 
     const user = result.rows[0];
-
-    // Compare the hashed password stored in the database with the password provided by the user
     const passwordMatch = await bcrypt.compare(password, user.password);
 
     if (!passwordMatch) {
+      console.error("Incorrect password for user:", username);
       return res.status(401).send("Incorrect password");
+    } else {
+      // Set user_id in the session to indicate the user is logged in
+      req.session.cookie.user_id = user.userid;
+      console.log("User logged in successfully:", username);
+      console.log("Session:", req.session);
+      // Authentication successful
+      res.status(200).send("Login successful");
     }
-
-    // Store user's unique identifier in the session
-    req.session.user_id = user.userid;
-    console.log(req.session);
-
-    // Authentication successful
-    res.status(200).send("Login successful");
   } catch (error) {
     console.error("Error during login:", error);
     res.status(500).send("Error during login");
   }
 });
+
 // Logout route
 app.post("/users/logout", (req, res) => {
   req.session.destroy((err) => {

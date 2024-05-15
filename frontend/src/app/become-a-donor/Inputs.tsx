@@ -7,6 +7,7 @@ import React, { useState } from "react";
 import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
 import styles from "./styles.module.css";
+import { useRouter } from "next/navigation";
 
 type Inputs = {
   fullName: string;
@@ -27,7 +28,7 @@ export default function BecomeDonor() {
     reset,
   } = useForm<Inputs>({ mode: "onChange" });
   const [isSubmitted, setIsSubmitted] = useState(false);
-
+  const router = useRouter();
   const handleRegistration = async (formData: Inputs): Promise<void> => {
     try {
       const response = await axios.post(
@@ -45,6 +46,7 @@ export default function BecomeDonor() {
         // Handle successful response (e.g., clear form, show success message)
         setIsSubmitted(true); // Set state to display success message
         reset();
+        router.push("/donors");
       } else {
         console.error("Form submission failed:", response);
         // Handle error (e.g., display error message to user)

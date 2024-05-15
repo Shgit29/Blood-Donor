@@ -26,12 +26,14 @@ export default function LoginForm() {
   const handleLogin = async (formData: Inputs): Promise<void> => {
     try {
       const response = await axios.post(
-        "http://localhost:3000/users/login", // Replace with your login API endpoint
+        "http://localhost:3000/users/login",
         formData,
+
         {
           headers: {
             "Content-Type": "application/json",
           },
+          // withCredentials: true,
         }
       );
 
