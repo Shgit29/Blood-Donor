@@ -16,6 +16,8 @@ import MenuItem from "@mui/material/MenuItem";
 import AdbIcon from "@mui/icons-material/Adb";
 import { Link } from "@mui/material";
 import nextLink from "next/link";
+import { useRouter } from "next/navigation";
+import axios from "axios";
 
 const pages = ["Become-A-Donor", "Donors", "Receivers", "About us"];
 const settings = ["Profile", "Account", "Dashboard", "Logout"];
@@ -41,6 +43,33 @@ function ResponsiveAppBar() {
 
   const handleCloseUserMenu = () => {
     setAnchorElUser(null);
+  };
+  const router = useRouter();
+
+  const handleLogout = async (): Promise<void> => {
+    try {
+      const response = await axios.delete(
+        "http://localhost:3000/users/logout",
+        {
+          withCredentials: true,
+        }
+      );
+
+      if (response.status === 200) {
+        console.log("Logout successful:", response.data);
+        // Clear any client-side session data (optional)
+        console.log(localStorage);
+        localStorage.removeItem("user_id"); // Assuming you store user data in localStorage
+
+        router.push("/donors");
+      } else {
+        console.error("Logout failed:", response);
+        // Handle logout errors (e.g., display error message to user)
+      }
+    } catch (error) {
+      console.error("Error logging out:", error);
+      // Handle errors (e.g., network issues, server errors)
+    }
   };
 
   return (
@@ -183,7 +212,34 @@ function ResponsiveAppBar() {
               open={Boolean(anchorElUser)}
               onClose={handleCloseUserMenu}
             >
+              {settings.map((setting) => (
+                <MenuItem key={setting} onClick={handleCloseUserMenu}>
+                  <Typography textAlign="center">{setting}</Typography>
+                </MenuItem>
+              ))}
+            </Menu>
+          </Box>
 
+          <Box sx={{ flexGrow: 0 }}>
+            <Tooltip>
+              <IconButton href="/users/Login">Logout</IconButton>
+            </Tooltip>
+            <Menu
+              sx={{ mt: "45px" }}
+              id="menu-appbar"
+              anchorEl={anchorElUser}
+              anchorOrigin={{
+                vertical: "top",
+                horizontal: "right",
+              }}
+              keepMounted
+              transformOrigin={{
+                vertical: "top",
+                horizontal: "right",
+              }}
+              open={Boolean(anchorElUser)}
+              onClose={handleCloseUserMenu}
+            >
               {settings.map((setting) => (
                 <MenuItem key={setting} onClick={handleCloseUserMenu}>
                   <Typography textAlign="center">{setting}</Typography>

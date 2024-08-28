@@ -14,7 +14,10 @@ const ShowDonors = () => {
   useEffect(() => {
     async function fetchDonors() {
       try {
-        const response = await fetch("http://localhost:3000/donors");
+        const response = await fetch("http://localhost:3000/donors", {
+          method: "GET",
+          credentials: "include", // Ensure the cookie is sent with the request
+        });
         if (!response.ok) {
           throw new Error("Failed to fetch donor data");
         }

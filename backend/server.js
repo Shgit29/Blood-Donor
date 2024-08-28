@@ -15,31 +15,28 @@ const session = require("express-session");
 const app = express();
 
 app.use(bodyParser.json());
-app.use(cors());
+app.use(
+  cors({
+    origin: "http://localhost:3001", // your React app's origin
+    credentials: true,
+  })
+);
 
-// const sessionConfig = {
-//   secret: "bettersecret",
-//   resave: false,
-//   saveUninitialized: true,
-//   cookie: {
-//     secure: true,
-//   },
-// };
 app.use(express.urlencoded({ extended: true }));
 app.use(
   session({
-    key: "user_id",
+    key: "saad1",
     secret: "your-secret-key", // Replace with a secure random string
     resave: false,
     saveUninitialized: true,
     cookie: {
       expires: Date.now() + 1000 * 60 * 60 * 24 * 7,
       maxAge: 1000 * 60 * 60 * 24 * 7,
+      // sameSite: "lax",
+      // secure: false,
     },
   })
 );
-
-//show all donors
 
 const requireLogin = (req, res, next) => {
   // console.log(session.Store);
@@ -48,15 +45,20 @@ const requireLogin = (req, res, next) => {
     next();
   } else {
     // If user is not authenticated, send a 401 Unauthorized response
-    console.error("User not authenticated. Session:", req.session);
+    console.error(
+      "User not authenticated. Session:",
+      req.session,
+      "req cookie: ",
+      req.headers.cookie
+    );
     return res.status(401).json({ message: "Unauthorized" });
   }
 };
 
-app.get("/donors", async (req, res) => {
+app.get("/donors", requireLogin, async (req, res) => {
   try {
     const result = await db.query("SELECT * FROM blood_donors");
-    console.log(result.rows);
+    console.log(req.session);
     return res.json(result.rows);
   } catch (err) {
     console.error(err);
@@ -66,7 +68,7 @@ app.get("/donors", async (req, res) => {
 
 //creating a new donor
 
-app.post("/become-a-donor", async (req, res) => {
+app.post("/become-a-donor", requireLogin, async (req, res) => {
   try {
     const geoData = await geocoder
       .forwardGeocode({
@@ -240,10 +242,10 @@ app.post("/users/login", async (req, res) => {
       return res.status(401).send("Incorrect password");
     } else {
       // Set user_id in the session to indicate the user is logged in
-      req.session.cookie.user_id = user.userid;
-      console.log("User logged in successfully:", username);
-      console.log("Session:", req.session);
-      // Authentication successful
+      req.session.user_id = user.userid;
+
+      console.log(req.session);
+
       res.status(200).send("Login successful");
     }
   } catch (error) {
@@ -259,8 +261,34 @@ app.post("/users/logout", (req, res) => {
       console.error("Error destroying session:", err);
       return res.status(500).send("Error logging out");
     }
+
     res.status(200).send("Logout successful");
   });
+});
+
+app.post("/receive", async (req, res) => {
+  try {
+    // Extract blood group from request body
+    const { bloodGroup } = req.body;
+
+    // Check blood group availability in the database
+    const query = `SELECT * FROM blood_donors WHERE bloodgroup = $1`; // Adjust query based on your table structure
+    const result = await db.query(query, [bloodGroup]);
+
+    // Handle availability based on query results
+    if (result.rows.length > 0) {
+      // Blood group is available! Proceed with donor registration logic (existing code)
+      console.log(`Blood group ${bloodGroup} is available.`);
+      // ... your existing logic for registering the donor
+    } else {
+      // Blood group is not available. Send appropriate response
+      console.warn(`Blood group ${bloodGroup} is not available.`);
+      res.status(400).json({ message: "Blood group currently unavailable" });
+    }
+  } catch (error) {
+    console.error("Error checking blood group availability:", error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
 });
 app.listen(3000, () => {
   console.log("Server is running on port 3000");

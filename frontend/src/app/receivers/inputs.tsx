@@ -32,13 +32,12 @@ export default function BecomeDonor() {
   const handleRegistration = async (formData: Inputs): Promise<void> => {
     try {
       const response = await axios.post(
-        "http://localhost:3000/become-a-donor",
+        "http://localhost:3000/receive",
         formData,
         {
           headers: {
             "Content-Type": "application/json",
           },
-          withCredentials: true,
         }
       );
 

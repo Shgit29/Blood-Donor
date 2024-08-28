@@ -27,10 +27,10 @@ export default function IntroDivider({ donor }: IntroDividerProps) {
   if (!donor) {
     return null; // Return null if donor is null or undefined
   }
-  
+
   // Render the donor information
   return (
-    <Card variant="outlined" sx={{ maxWidth: 1000 }}>
+    <Card variant="outlined" sx={{ minWidth: 600 }}>
       <Box sx={{ p: 2 }}>
         <Stack
           direction="row"
@@ -45,8 +45,7 @@ export default function IntroDivider({ donor }: IntroDividerProps) {
           </Typography>
         </Stack>
         <Typography color="text.secondary" variant="body2">
-          Pinstriped cornflower blue cotton blouse takes you on a walk to the
-          park or just down the hall.
+          {donor.location}
         </Typography>
       </Box>
       <Divider />

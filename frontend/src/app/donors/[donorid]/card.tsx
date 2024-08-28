@@ -91,8 +91,8 @@ export default function RecipeReviewCard({ donor }: IntroDividerProps) {
             <MoreVertIcon />
           </IconButton>
         }
-        title="Shrimp and Chorizo Paella"
-        subheader="September 14, 2016"
+        title={donor[0].donorname}
+        subheader={donor[0].location}
       />
       {/* <CardMedia
         component="img"

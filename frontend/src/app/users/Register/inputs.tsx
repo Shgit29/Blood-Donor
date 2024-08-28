@@ -32,6 +32,7 @@ export default function LoginForm() {
           headers: {
             "Content-Type": "application/json",
           },
+          withCredentials: true,
         }
       );
 
@@ -115,7 +116,7 @@ export default function LoginForm() {
           type="submit"
           variant="contained"
         >
-          Login
+          Register
         </Button>
       </form>
     </>

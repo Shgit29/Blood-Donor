@@ -23,17 +23,16 @@ export default function LoginForm() {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const router = useRouter();
 
-  const handleLogin = async (formData: Inputs): Promise<void> => {
+  const handleLogin: SubmitHandler<Inputs> = async (formData: Inputs) => {
     try {
       const response = await axios.post(
         "http://localhost:3000/users/login",
         formData,
-
         {
           headers: {
             "Content-Type": "application/json",
           },
-          // withCredentials: true,
+          withCredentials: true, // Ensure cookies are sent with the request
         }
       );
 
@@ -55,7 +54,7 @@ export default function LoginForm() {
   const registerOptions = {
     username: {
       // Make username optional (remove required property)
-      required: "username is required",
+      required: "Username is required",
       pattern: {
         // Optional username format validation (adjust based on your needs)
         value: /^[a-zA-Z0-9_.-]*$/,
@@ -72,8 +71,10 @@ export default function LoginForm() {
     // },
     password: {
       required: "Password is required",
-      minLength: 6, // Minimum password length requirement (optional)
-      message: "Password must be at least 6 characters long",
+      minLength: {
+        value: 6,
+        message: "Password must be at least 6 characters long",
+      },
     },
   };
 
